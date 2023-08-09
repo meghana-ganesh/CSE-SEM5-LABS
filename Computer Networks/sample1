@@ -1,0 +1,366 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <string.h>
+
+#define PORTNO 10200
+
+void sortIntArray(int arr[], int size) {
+    for (int i = 0; i < size - 1; i++) {
+        for (int j = 0; j < size - i - 1; j++) {
+            if (arr[j] > arr[j + 1]) {
+                int temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+        }
+    }
+}
+
+int main() {
+    int sockfd, newsockfd, portno, clilen;
+    struct sockaddr_in seraddr, cliaddr;
+    int arr[256];
+    int n;
+
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+    seraddr.sin_family = AF_INET;
+    seraddr.sin_addr.s_addr = INADDR_ANY;
+    seraddr.sin_port = htons(PORTNO);
+
+    bind(sockfd, (struct sockaddr *)&seraddr, sizeof(seraddr));
+    listen(sockfd, 5);
+
+    while (1) {
+        clilen = sizeof(cliaddr);
+        newsockfd = accept(sockfd, (struct sockaddr *)&cliaddr, &clilen);
+
+        if (fork() == 0) {
+            close(sockfd);
+
+            n = read(newsockfd, arr, sizeof(arr));
+            int arr_size = n / sizeof(int);
+
+            sortIntArray(arr, arr_size);
+
+            char response[256];
+            snprintf(response, sizeof(response), "Sorted array: ");
+            for (int i = 0; i < arr_size; i++) {
+                char num_str[16];
+                snprintf(num_str, sizeof(num_str), "%d ", arr[i]);
+                strncat(response, num_str, sizeof(response) - strlen(response) - 1);
+            }
+            snprintf(response + strlen(response), sizeof(response) - strlen(response) - 1, "\nProcess ID: %d\n", getpid());
+
+            write(newsockfd, response, sizeof(response));
+
+            close(newsockfd);
+            exit(0);
+        } else {
+            close(newsockfd);
+        }
+    }
+
+    return 0;
+}
+
+
+
+//client program 
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <string.h>
+
+#define PORTNO 10200
+
+int main() {
+    int sockfd;
+    struct sockaddr_in seraddr;
+    int arr[] = {42, 10, 35, 7, 23};
+    int arr_size = sizeof(arr) / sizeof(int);
+
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+    seraddr.sin_family = AF_INET;
+    seraddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    seraddr.sin_port = htons(PORTNO);
+
+    connect(sockfd, (struct sockaddr *)&seraddr, sizeof(seraddr));
+
+    write(sockfd, arr, sizeof(arr));
+
+    char response[256];
+    read(sockfd, response, sizeof(response));
+
+    printf("Received from server: %s\n", response);
+
+    close(sockfd);
+
+    return 0;
+}
+
+
+
+
+
+//q2 
+//server
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+
+#define PORTNO 10200
+
+int main() {
+    int sockfd, newsockfd, clilen;
+    struct sockaddr_in seraddr, cliaddr;
+    
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+    seraddr.sin_family = AF_INET;
+    seraddr.sin_addr.s_addr = INADDR_ANY;
+    seraddr.sin_port = htons(PORTNO);
+
+    bind(sockfd, (struct sockaddr *)&seraddr, sizeof(seraddr));
+    listen(sockfd, 5);
+
+    while (1) {
+        clilen = sizeof(cliaddr);
+        newsockfd = accept(sockfd, (struct sockaddr *)&cliaddr, &clilen);
+
+        if (fork() == 0) {
+            close(sockfd);
+
+            int operands[2];
+            char operator;
+            int result;
+
+            read(newsockfd, operands, sizeof(operands));
+            read(newsockfd, &operator, sizeof(operator));
+
+            switch (operator) {
+                case '+':
+                    result = operands[0] + operands[1];
+                    break;
+                case '-':
+                    result = operands[0] - operands[1];
+                    break;
+                case '*':
+                    result = operands[0] * operands[1];
+                    break;
+                case '/':
+                    if (operands[1] != 0) {
+                        result = operands[0] / operands[1];
+                    } else {
+                        result = 0;  // Handle division by zero
+                    }
+                    break;
+                default:
+                    result = 0;  // Invalid operator
+            }
+
+            write(newsockfd, &result, sizeof(result));
+
+            close(newsockfd);
+            exit(0);
+        } else {
+            close(newsockfd);
+        }
+    }
+
+    return 0;
+}
+
+
+//client
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <string.h>
+
+#define PORTNO 10200
+
+int main() {
+    int sockfd;
+    struct sockaddr_in seraddr;
+
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+    seraddr.sin_family = AF_INET;
+    seraddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    seraddr.sin_port = htons(PORTNO);
+
+    connect(sockfd, (struct sockaddr *)&seraddr, sizeof(seraddr));
+
+    int operands[2];
+    char operator;
+    int result;
+
+    printf("Enter first operand: ");
+    scanf("%d", &operands[0]);
+
+    printf("Enter second operand: ");
+    scanf("%d", &operands[1]);
+
+    printf("Enter operator (+, -, *, /): ");
+    scanf(" %c", &operator);
+
+    write(sockfd, operands, sizeof(operands));
+    write(sockfd, &operator, sizeof(operator));
+
+    read(sockfd, &result, sizeof(result));
+
+    printf("Result: %d\n", result);
+
+    close(sockfd);
+
+    return 0;
+}
+
+
+
+
+
+
+//q3
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/time.h>
+
+#define PORTNO 10200
+
+int main() {
+    int sockfd, newsockfd, clilen, max_fd;
+    struct sockaddr_in seraddr, cliaddr;
+    fd_set read_fds, temp_fds;
+    char time_str[128];
+    time_t current_time;
+    
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+    seraddr.sin_family = AF_INET;
+    seraddr.sin_addr.s_addr = INADDR_ANY;
+    seraddr.sin_port = htons(PORTNO);
+
+    bind(sockfd, (struct sockaddr *)&seraddr, sizeof(seraddr));
+    listen(sockfd, 5);
+
+    FD_ZERO(&read_fds);
+    FD_SET(sockfd, &read_fds);
+    max_fd = sockfd;
+
+    while (1) {
+        temp_fds = read_fds;
+
+        if (select(max_fd + 1, &temp_fds, NULL, NULL, NULL) == -1) {
+            perror("select");
+            exit(1);
+        }
+
+        for (int i = 0; i <= max_fd; i++) {
+            if (FD_ISSET(i, &temp_fds)) {
+                if (i == sockfd) {
+                    clilen = sizeof(cliaddr);
+                    newsockfd = accept(sockfd, (struct sockaddr *)&cliaddr, &clilen);
+                    FD_SET(newsockfd, &read_fds);
+                    if (newsockfd > max_fd) {
+                        max_fd = newsockfd;
+                    }
+                } else {
+                    close(i);
+                    FD_CLR(i, &read_fds);
+                }
+            }
+        }
+
+        // Get current time and format it as a string
+        current_time = time(NULL);
+        strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", localtime(&current_time));
+
+        for (int i = 0; i <= max_fd; i++) {
+            if (FD_ISSET(i, &read_fds)) {
+                write(i, time_str, sizeof(time_str));
+            }
+        }
+    }
+
+    return 0;
+}
+
+
+
+
+//exercise2
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/time.h>
+
+#define PORTNO 10200
+
+int main() {
+    int sockfd, newsockfd, clilen;
+    struct sockaddr_in seraddr, cliaddr;
+
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+    seraddr.sin_family = AF_INET;
+    seraddr.sin_addr.s_addr = INADDR_ANY;
+    seraddr.sin_port = htons(PORTNO);
+
+    bind(sockfd, (struct sockaddr *)&seraddr, sizeof(seraddr));
+    listen(sockfd, 5);
+
+    while (1) {
+        clilen = sizeof(cliaddr);
+        newsockfd = accept(sockfd, (struct sockaddr *)&cliaddr, &clilen);
+
+        if (fork() == 0) {
+            close(sockfd);
+
+            char time_str[128];
+            time_t current_time;
+            int pid = getpid();
+
+            // Get current time and format it as a string
+            current_time = time(NULL);
+            strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", localtime(&current_time));
+
+            // Construct response with time and process ID
+            char response[256];
+            snprintf(response, sizeof(response), "Date and Time: %s\nProcess ID: %d\n", time_str, pid);
+
+            write(newsockfd, response, sizeof(response));
+
+            close(newsockfd);
+            exit(0);
+        } else {
+            close(newsockfd);
+        }
+    }
+
+    return 0;
+}
