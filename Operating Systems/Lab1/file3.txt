@@ -1,0 +1,17 @@
+hi hey hello
+how are you doing?
+hey are you here
+hello
+are you from MIT Manipal
+what are you saying?
+i cant hear you well 
+could you repeat that please
+The error message "stack smashing detected" indicates that your program has encountered a buffer overflow or stack corruption issue, 
+which has led to an abnormal termination of your program. 
+This error usually occurs when you write more data into a buffer than it can hold, 
+causing memory corruption.
+In the code you've provided, 
+I see that you have an array named line with a size of 256 characters. 
+You're reading characters from the file into this buffer, 
+and if the line length exceeds 256 characters, 
+a buffer overflow can occur.

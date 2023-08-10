@@ -1,0 +1,4 @@
+To fix this issue, 
+you need to ensure that you don't write more characters into the line buffer than it can hold. 
+One way to do this is by using the strncpy function to copy characters from the file into the line buffer while ensuring you stay within its bounds. 
+Here's an updated version of your displayfile function that avoids buffer overflows
