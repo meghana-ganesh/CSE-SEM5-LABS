@@ -1,106 +1,4 @@
-#include <stdio.h>
-
-int main() {
-    FILE *inputFile, *outputFile;
-    char inputFileName[100], outputFileName[100];
-    char c;
-
-    // Get the input file name from the user
-    printf("Enter the input file name: ");
-    scanf("%s", inputFileName);
-
-    // Open the input file in read mode
-    inputFile = fopen(inputFileName, "r");
-    if (inputFile == NULL) {
-        printf("Error opening the input file.\n");
-        return 1;
-    }
-
-    // Get the output file name from the user
-    printf("Enter the output file name: ");
-    scanf("%s", outputFileName);
-
-    // Open the output file in write mode
-    outputFile = fopen(outputFileName, "w");
-    if (outputFile == NULL) {
-        printf("Error opening the output file.\n");
-        fclose(inputFile);
-        return 1;
-    }
-
-    // Read characters from the input file and replace spaces and tabs with a single space
-    while ((c = fgetc(inputFile)) != EOF) {
-        if (c == ' ' || c == '\t') {
-            fputc(' ', outputFile); // Replace with a single space
-            while ((c = fgetc(inputFile)) == ' ' || c == '\t')
-                ; // Skip consecutive spaces and tabs
-            ungetc(c, inputFile); // Push back the last non-space/tab character
-        } else {
-            fputc(c, outputFile); // Copy other characters as it is
-        }
-    }
-
-    // Close the files
-    fclose(inputFile);
-    fclose(outputFile);
-
-    printf("Spaces and tabs replaced successfully. Output written to %s.\n", outputFileName);
-
-    return 0;
-}
-
-//q2
-#include <stdio.h>
-#include <string.h>
-
-int main() {
-    FILE *inputFile, *outputFile;
-    char inputFileName[100], outputFileName[100];
-    char line[1000];
-
-    // Get the input file name from the user
-    printf("Enter the input file name: ");
-    scanf("%s", inputFileName);
-
-    // Open the input file in read mode
-    inputFile = fopen(inputFileName, "r");
-    if (inputFile == NULL) {
-        printf("Error opening the input file.\n");
-        return 1;
-    }
-
-    // Get the output file name from the user
-    printf("Enter the output file name: ");
-    scanf("%s", outputFileName);
-
-    // Open the output file in write mode
-    outputFile = fopen(outputFileName, "w");
-    if (outputFile == NULL) {
-        printf("Error opening the output file.\n");
-        fclose(inputFile);
-        return 1;
-    }
-
-    // Read lines from the input file and skip lines starting with #
-    while (fgets(line, sizeof(line), inputFile) != NULL) {
-        if (line[0] == '#') {
-            // Skip preprocessor directive lines
-            continue;
-        }
-        // Write non-preprocessor directive lines to the output file
-        fputs(line, outputFile);
-    }
-
-    // Close the files
-    fclose(inputFile);
-    fclose(outputFile);
-
-    printf("Preprocessor directives discarded successfully. Output written to %s.\n", outputFileName);
-
-    return 0;
-}
-
-//q3
+//l2q3
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -163,3 +61,132 @@ int main() {
 
     return 0;
 }
+
+
+
+
+
+//l3 q1 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+// Token types
+typedef enum {
+    ARITHMETIC_OP,
+    RELATIONAL_OP,
+    LOGICAL_OP,
+    SPECIAL_SYMBOL,
+    KEYWORD,
+    NUMERIC_CONSTANT,
+    STRING_LITERAL,
+    IDENTIFIER
+} TokenType;
+
+// Token structure
+typedef struct {
+    int row;
+    int col;
+    TokenType type;
+    char value[100];
+} Token;
+
+// Function to check if a character is a valid identifier character
+int isIdentifierChar(char c) {
+    return isalnum(c) || c == '_';
+}
+
+// Function to identify a token
+Token getNextToken(FILE *file, int *row, int *col) {
+    Token token;
+    token.row = *row;
+    token.col = *col;
+
+    char c = fgetc(file);
+
+    while (isspace(c)) {
+        if (c == '\n') {
+            (*row)++;
+            *col = 0;
+        } else {
+            (*col)++;
+        }
+        c = fgetc(file);
+    }
+
+    if (isalpha(c) || c == '_') {
+        // Identifiers or Keywords
+        int i = 0;
+        while (isIdentifierChar(c)) {
+            token.value[i++] = c;
+            c = fgetc(file);
+        }
+        token.value[i] = '\0';
+
+        // Check if the identifier is a keyword
+        // Assume "if" and "else" are the only keywords for simplicity
+        if (strcmp(token.value, "if") == 0 || strcmp(token.value, "else") == 0) {
+            token.type = KEYWORD;
+        } else {
+            token.type = IDENTIFIER;
+        }
+    } else if (isdigit(c)) {
+        // Numeric Constants
+        int i = 0;
+        while (isdigit(c)) {
+            token.value[i++] = c;
+            c = fgetc(file);
+        }
+        token.value[i] = '\0';
+        token.type = NUMERIC_CONSTANT;
+    } else if (c == '"') {
+        // String Literals
+        int i = 0;
+        token.value[i++] = c;
+        c = fgetc(file);
+        while (c != '"') {
+            token.value[i++] = c;
+            c = fgetc(file);
+        }
+        token.value[i++] = c;
+        token.value[i] = '\0';
+        token.type = STRING_LITERAL;
+    } else {
+        // Special Symbols, Arithmetic, Relational, Logical Operators
+        token.value[0] = c;
+        token.value[1] = '\0';
+        (*col)++;
+        if (strchr("+-*/%", c)) {
+            token.type = ARITHMETIC_OP;
+        } else if (strchr("<>=", c)) {
+            token.type = RELATIONAL_OP;
+        } else if (strchr("&|!", c)) {
+            token.type = LOGICAL_OP;
+        } else {
+            token.type = SPECIAL_SYMBOL;
+        }
+    }
+
+    return token;
+}
+
+int main() {
+    FILE *file = fopen("input.c", "r");
+    if (!file) {
+        printf("Unable to open file.\n");
+        return 1;
+    }
+
+    int row = 1, col = 1;
+    Token token;
+    while (!feof(file)) {
+        token = getNextToken(file, &row, &col);
+        printf("Row: %d, Col: %d, Type: %d, Value: %s\n", token.row, token.col, token.type, token.value);
+        col += strlen(token.value);
+    }
+
+    fclose(file);
+    return 0;
+}
+
