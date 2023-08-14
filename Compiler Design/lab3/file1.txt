@@ -1,0 +1,9 @@
+#include<stdio.h>
+#include<stdlib.h>
+int main()
+{
+	int a,b,sum,diff,and;
+	sum = a+b;
+	diff = a - b;
+	i++;
+}
