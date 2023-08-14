@@ -186,7 +186,146 @@ int main() {
         col += strlen(token.value);
     }
 
+
+
+
+    
+//additional q1
+#include <stdio.h>
+#include <ctype.h>
+
+int position = 0;
+char input[100];
+
+int getNextChar() {
+    return input[position++];
+}
+
+int isOperator(char c) {
+    return c == '+' || c == '-' || c == '*' || c == '/';
+}
+
+int evaluateExpression();
+
+int getNumber() {
+    int num = 0;
+    while (isdigit(input[position])) {
+        num = num * 10 + (input[position] - '0');
+        position++;
+    }
+    return num;
+}
+
+int evaluateFactor() {
+    if (isdigit(input[position])) {
+        return getNumber();
+    } else if (input[position] == '(') {
+        position++; // Move past '('
+        int result = evaluateExpression();
+        position++; // Move past ')'
+        return result;
+    }
+    return 0; // Invalid input
+}
+
+int evaluateTerm() {
+    int result = evaluateFactor();
+    while (isOperator(input[position])) {
+        char op = input[position++];
+        int operand = evaluateFactor();
+        if (op == '*') {
+            result *= operand;
+        } else if (op == '/') {
+            result /= operand;
+        }
+    }
+    return result;
+}
+
+int evaluateExpression() {
+    int result = evaluateTerm();
+    while (isOperator(input[position])) {
+        char op = input[position++];
+        int term = evaluateTerm();
+        if (op == '+') {
+            result += term;
+        } else if (op == '-') {
+            result -= term;
+        }
+    }
+    return result;
+}
+
+int main() {
+    printf("Enter an arithmetic expression: ");
+    gets(input);
+
+    int result = evaluateExpression();
+    printf("Result: %d\n", result);
+
+    return 0;
+}
+
+
     fclose(file);
     return 0;
 }
+
+
+
+//additional q2
+#include <stdio.h>
+
+int position = 0;
+char input[1000];
+
+int getNextChar() {
+    return input[position++];
+}
+
+void skipWhitespace() {
+    while (input[position] == ' ' || input[position] == '\t' || input[position] == '\n') {
+        position++;
+    }
+}
+
+void parseFunctionOrStructure() {
+    while (input[position] != '\0') {
+        if (input[position] == '(') {
+            printf("Found a function declaration or call\n");
+            break;
+        } else if (input[position] == ';') {
+            printf("Found a structure declaration\n");
+            break;
+        }
+        position++;
+    }
+}
+
+int main() {
+    printf("Enter 'C' code: ");
+    gets(input);
+
+    while (input[position] != '\0') {
+        skipWhitespace();
+        if (input[position] == '#') {
+            printf("Found a preprocessor directive\n");
+            position++; // Skip the #
+        } else if (input[position] == 'i' && input[position + 1] == 'n' && input[position + 2] == 't') {
+            printf("Found a variable declaration\n");
+            position += 3; // Skip 'int'
+        } else if (input[position] == 'f' && input[position + 1] == 'o' && input[position + 2] == 'r') {
+            printf("Found a loop (for) construct\n");
+            position += 3; // Skip 'for'
+        } else if (input[position] == 'i' && input[position + 1] == 'f') {
+            printf("Found a conditional (if) construct\n");
+            position += 2; // Skip 'if'
+        } else {
+            parseFunctionOrStructure();
+        }
+    }
+
+    return 0;
+}
+
 
