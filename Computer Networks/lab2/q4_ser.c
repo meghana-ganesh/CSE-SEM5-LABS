@@ -1,6 +1,3 @@
-/* Name: Jithin Joseph
-   RegNo: 210905372 */
-
 #include<stdio.h>
 #include<string.h>
 #include<sys/types.h>
