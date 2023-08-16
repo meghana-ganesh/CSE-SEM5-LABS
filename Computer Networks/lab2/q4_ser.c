@@ -5,6 +5,7 @@
 #include<arpa/inet.h>
 #include<netinet/in.h>
 #include<stdlib.h>
+#include<unistd.h>
 #define PORTNO 4012
 
 void removedups(char strings[][256],char ch[],char res[]){
@@ -65,7 +66,6 @@ int main()
 			char strings[256][256] = {""};
 			char res[256] = {""};
 			read(newsockfd,buf,sizeof(buf));
-			strcpy(com,buf);
 			removedups(strings,buf,res);
 			write(newsockfd,res,sizeof(res));
 			close(newsockfd);
