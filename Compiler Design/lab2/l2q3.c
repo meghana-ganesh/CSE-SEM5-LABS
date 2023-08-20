@@ -1,3 +1,4 @@
+//q3 done
 #include<stdio.h>
 #include<ctype.h>
 #include<string.h>
