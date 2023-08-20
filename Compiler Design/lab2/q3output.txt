@@ -1,0 +1,12 @@
+#include<stdio.h>
+#include<stdlib.h>
+INT main()
+{
+	INT a,b;
+	printf("CONTINUE");
+	IF(a == b)
+	{
+		CONTINUE;
+	}
+	RETURN 0;
+}
