@@ -63,6 +63,7 @@ void createToken(Token token[256],int row_no,int col_no,char *str)
     token[ind].col_no = col_no;
     ind++;
 }
+
 void getSpecialSymbol(char line[],int row_no,Token token[256])
 {
     for(int i=0;i<strlen(line);i++)
@@ -76,19 +77,36 @@ void getSpecialSymbol(char line[],int row_no,Token token[256])
                 symbol[0] = line[i];
                 symbol[1] = '\0';
                 createToken(token,row_no,i,symbol);
-                i++;
                 break;
             case ',':
                 symbol[0] = line[i];
                 symbol[1] = '\0';
                 createToken(token,row_no,i,symbol);
-                i++;
                 break;
             case ';':
                 symbol[0] = line[i];
                 symbol[1] = '\0';
                 createToken(token,row_no,i,symbol);
-                i++;
+                break;
+            case '(':
+                symbol[0] = line[i];
+                symbol[1] = '\0';
+                createToken(token,row_no,i,symbol);
+                break;
+            case ')':
+                symbol[0] = line[i];
+                symbol[1] = '\0';
+                createToken(token,row_no,i,symbol);
+                break;
+            case '{':
+                symbol[0] = line[i];
+                symbol[1] = '\0';
+                createToken(token,row_no,i,symbol);
+                break;
+            case '}':
+                symbol[0] = line[i];
+                symbol[1] = '\0';
+                createToken(token,row_no,i,symbol);
                 break;
             default:
                 break;
