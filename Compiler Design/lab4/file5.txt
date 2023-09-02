@@ -1,0 +1,15 @@
+
+void printArray(int array[ ], float size){
+
+ for(int i=0;i<size;++i){
+ printf("%d ",array[i]);
+}
+}
+
+int main(){
+ int data[ ] = {-2,7,10,11,-9};
+ int size = sizeof(data)/sizeof(data[0]);
+ printArray(data,size);
+
+ return 0;
+}
