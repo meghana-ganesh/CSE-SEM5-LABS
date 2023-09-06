@@ -1,64 +1,54 @@
 #include<stdio.h>
 #include<stdlib.h>
-#include<string.h>
 
-typedef struct{
-    char** queue;
+typedef struct Queue{
+    int *queue;
     int front,rear,capacity;
 }Queue;
 
-void enqueueF(Queue* pq,char str[]){
-    if(pq->front == -1){
-        pq->rear = pq->front = 0;
-        strcpy(pq->queue[pq->front],str);
+void enqueue(Queue *pq,int ele){
+    if(pq->rear == pq->capacity-1){
+        printf("Queue is full\n");
     }
     else{
-        pq->front = (pq->front-1+pq->capacity)%pq->capacity;
-        strcpy(pq->queue[pq->front],str);
+        if(pq->front == -1)
+            pq->front = 0;
+        pq->rear = (pq->rear + 1) % pq->capacity;
+        pq->queue[pq->rear] = ele;
     }
 }
 
-void enqueueR(Queue* pq,char str[]){
-    if(pq->front == -1){
-        pq->front = 0;
+int dequeue(Queue *pq){
+    int ele;
+    if(pq->front == -1)
+        return 0;
+    else{
+        ele = pq->queue[pq->front];
+        pq->front = (pq->front + 1) % pq->capacity;
+        return ele;
     }
-    pq->rear = (pq->rear+1)%pq->capacity;
-    strcpy(pq->queue[pq->rear],str);
+
 }
 
-char* dequeueF(Queue* pq){
-    if((pq->front == pq->rear) && (pq->rear == pq->capacity-1)){
-        return "EMPTY";
+void display(Queue *pq){
+    for(int i=pq->front;i<pq->rear+1;i++){
+        printf("%d ",pq->queue[i]);
     }
-    char* str = (char*)malloc((strlen(pq->queue[pq->front])+1)*sizeof(char));
-    strcpy(str,pq->queue[pq->front]);
-    pq->front = (pq->front+1)%pq->capacity;
-    return str;
-}
-
-void display(Queue* pq){
-    int i = pq->front;
-    while(i!=pq->rear){
-        printf("%s ",pq->queue[i]);
-        i = (i+1)%pq->capacity;
-    }
-    printf("%s ",pq->queue[pq->rear]);
 }
 
 int main(){
     Queue *pq,q;
     pq = &q;
-    printf("Enter the capacity: ");
-    scanf("%d",&pq->capacity);
     pq->front = pq->rear = -1;
-    pq->queue = (char**)malloc(pq->capacity*sizeof(char*));
-    for(int i = 0; i< pq->capacity; i++){
-        pq->queue[i] = (char*)malloc(20*sizeof(char));
-    }
-    enqueueF(pq,"Morning");
-    enqueueF(pq,"Good");
-    enqueueR(pq,"My");
-    enqueueR(pq,"Name");
-    dequeueF(pq);
+    printf("Enter capacity:\n");
+    scanf("%d",&pq->capacity);
+    pq->queue = (int*)malloc(pq->capacity*sizeof(int));
+    enqueue(pq,2);
+    enqueue(pq,4);
+    enqueue(pq,6);
     display(pq);
+    printf("\n");
+    reverse(pq);
+    display(pq);
+    return 0;
 }
