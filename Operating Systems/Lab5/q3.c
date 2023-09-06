@@ -48,7 +48,6 @@ int main(){
     enqueue(pq,6);
     display(pq);
     printf("\n");
-    reverse(pq);
     display(pq);
     return 0;
 }
