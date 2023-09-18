@@ -5,6 +5,11 @@
 char str[100];
 int cur = 0;
 
+void S();
+void B();
+void A();
+void Aprime();
+
 void invalid()
 {
 	printf("---ERROR---");
