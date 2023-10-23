@@ -1,0 +1,6 @@
+int main()
+{
+	int n;
+	printf("hi");
+	scanf("%d",&n);
+}
