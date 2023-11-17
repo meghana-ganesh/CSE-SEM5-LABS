@@ -1,0 +1,33 @@
+if(a > b)
+{
+    if(a == b)
+    {
+        a = c;
+        c = d;
+    }
+    else
+    {
+        a = c;
+        c = d;
+    }
+}
+else if(a <= b)
+{
+    if(a != b)
+    {
+
+    }
+    else if(a == b)
+    {
+
+    }
+}
+else
+{
+    a = c+d*e;
+    c = d*e;
+}
+if(c == d)
+{
+
+}
